@@ -1,17 +1,23 @@
-from machinetranslation import translator
-from flask import Flask, render_template, request
-from machinetranslation.translator import language_translator
+"""
+Translator Module
 
-import json
+Este módulo contiene funciones para traducir texto de inglés a francés y de francés a inglés utilizando el servicio
+de IBM Watson Language Translator.
+"""
 
-app = Flask("Web Translator")
+from ibm_watson import LanguageTranslatorV3
+from ibm_cloud_sdk_core.authenticators import IAMAuthenticator
 
-@app.route("/englishToFrench")
+# Autenticación
+authenticator = IAMAuthenticator('e_RsjLG7lBI_6S_NDCZGdB9_HSZoAkVPKJlTlNNY3KEO')
+language_translator = LanguageTranslatorV3(version='2018-05-01', authenticator=authenticator)
+language_translator.set_service_url('https://api.au-syd.language-translator.watson.cloud.ibm.com/instances/5845cb2a-0c88-4786-bbf5-dcb6c1912c28')
+
+
 def english_to_french(english_text):
     """
     Translates English text to French.
     """
-    english_text = request.args.get('text')
     translation = language_translator.translate(text=english_text, model_id='en-fr').get_result()
     translated_text = translation['translations'][0]['translation']
     print(f"Translated text: {translated_text}")
@@ -22,12 +28,10 @@ ENGLISH_TEXT = "Hello, how are you today?"
 translated_text_1 = english_to_french(ENGLISH_TEXT)
 
 
-@app.route("/frenchToEnglish")
 def french_to_english(french_text):
     """
     Translates French text to English.
     """
-    french_text = request.args.get('text')
     translation = language_translator.translate(text=french_text, model_id='fr-en').get_result()
     translated_text = translation['translations'][0]['translation']
     print(f"Translated text: {translated_text}")
@@ -36,11 +40,3 @@ def french_to_english(french_text):
 
 FRENCH_TEXT = "Bonjour comment vas tu aujourd'hui?"
 translated_text_2 = french_to_english(FRENCH_TEXT)
-
-
-@app.route("/")
-def renderIndexPage():
-    return render_template("index.html")
-
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8080)
